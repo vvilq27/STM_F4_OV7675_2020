@@ -8,12 +8,14 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
+from sorter import sort
+
 # TODO 
 # check on mcu side whats sent
 #  check on python side whats received
 # how its parsed and errors catched
 
-rowRange = 300
+rowRange = 240
 pic = []
 t = []
 d = {}
@@ -22,7 +24,7 @@ listLinesToCapture = list(range(rowRange))
 file = open('data.txt', 'w')
 
 pic = [ ['00' for i in range(320)] for j in range(240)]
-s = serial.Serial('COM7', 1000000)
+s = serial.Serial('COM7', 256000)
 
 c = 0
 
@@ -54,6 +56,85 @@ for line in listLinesBuffer:
 		d[rownumber] = values[1:]
 
 print('pic dictionary created')
+
+# =========================
+# DATA gathered, writing to FILE
+# =========================
+
+# crete pic list & write data to file
+# print(d)
+
+# sorted dict returns indexes
+# cast dict to array
+for rowIdx in sorted(d):
+	try:
+		pic[rowIdx] = d[rowIdx]
+	except:
+		print('index out of index: {}'.format(rowIdx))
+
+	line = ''
+
+	for n in d[rowIdx]:
+		line += str(n) + ','
+	line += '\n'
+	file.write(line)
+
+
+file.close()
+s.close()
+
+print('pic dict sorted and written to file')
+
+sort()
+# =========================
+# make PIC
+# =========================
+
+
+'''
+for row in pic:
+	
+	# pop frame number if frame not "zero"
+	if len(set(row)) != 1:
+		row.pop()
+	
+	tmp = []
+
+	for i in row:
+	    for j in re.findall('..', i):
+	            tmp.append(int(j, 16))
+	    if len(tmp) > 319:
+	    	break
+
+	# fill missing data cells with '00'
+	r = 320 - len(tmp)
+
+	for i in range(r):
+		tmp.append('00')
+
+	# remove pixels if there is overhead
+	if len(tmp) > 320:
+		for i in range(len(tmp) - 320):
+			tmp.pop()
+
+	t.append(tmp)
+
+print('final image created')
+
+plt.imshow(np.array(t, dtype='uint8'), interpolation='nearest', cmap='gray')	
+plt.show()
+
+
+'''
+
+
+
+
+
+
+
+
+
 '''
 while done:
 	strLine = s.readline()
@@ -102,64 +183,3 @@ while done:
 	# print(len(missingRows))
 
 '''
-# =========================
-# DATA gathered
-# =========================
-
-# crete pic list & write data to file
-# print(d)
-
-for rowIdx in sorted(d):
-	try:
-		pic[rowIdx] = d[rowIdx]
-	except:
-		print('index out of index: {}'.format(rowIdx))
-
-	line = ''
-
-	for n in d[rowIdx]:
-		line += str(n) + ','
-	line += '\n'
-	file.write(line)
-
-
-file.close()
-s.close()
-
-print('pic dict sorted and written to file')
-
-# =========================
-# make PIC
-# =========================
-
-for row in pic:
-	
-	# pop frame number if frame not "zero"
-	if len(set(row)) != 1:
-		row.pop()
-	
-	tmp = []
-
-	for i in row:
-	    for j in re.findall('..', i):
-	            tmp.append(int(j, 16))
-	    if len(tmp) > 319:
-	    	break
-
-	# fill missing data cells with '00'
-	r = 320 - len(tmp)
-
-	for i in range(r):
-		tmp.append('00')
-
-	# remove pixels if there is overhead
-	if len(tmp) > 320:
-		for i in range(len(tmp) - 320):
-			tmp.pop()
-
-	t.append(tmp)
-
-print('final image created')
-
-plt.imshow(np.array(t, dtype='uint8'), interpolation='nearest', cmap='gray')	
-plt.show()
