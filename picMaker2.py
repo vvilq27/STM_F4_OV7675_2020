@@ -24,7 +24,7 @@ listLinesToCapture = list(range(rowRange))
 file = open('data.txt', 'w')
 
 pic = [ ['00' for i in range(320)] for j in range(240)]
-s = serial.Serial('COM7', 256000)
+s = serial.Serial('COM7', 230400, timeout=0.1)
 
 c = 0
 
@@ -34,8 +34,8 @@ done = True
 listLinesBuffer = []
 
 for i in range(0,rowRange):
-	if i % 60 == 0:
-		print('line {}'.format(i))
+	# if i % 60 == 0:
+	print('line {}'.format(i))
 	listLinesBuffer.append(s.readline())
 
 

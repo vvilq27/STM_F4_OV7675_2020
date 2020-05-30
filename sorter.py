@@ -31,6 +31,10 @@ def sort():
 		for line in lines:
 			numbers = line.split(',')
 
+			if len(numbers) == 0:
+				print('row is empty, close program')
+				return
+
 			# holds groups of four numbers per array
 			groupings = []
 
