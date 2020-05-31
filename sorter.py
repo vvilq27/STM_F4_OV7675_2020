@@ -28,32 +28,41 @@ def sort():
 
 	with open('data.txt', 'r') as picFile:
 		lines = picFile.readlines()
-		for line in lines:
-			numbers = line.split(',')
+		for fileLine in lines:
 
-			if len(numbers) == 0:
+			rowNumber, line = fileLine.split(',')
+
+			lineNumbers = []
+
+			for charCounter in range(320):
+				strNum = line[charCounter: charCounter+2]
+				lineNumbers.append(strNum)
+
+			if len(lineNumbers) == 0:
 				print('row is empty, close program')
 				return
 
-			# holds groups of four numbers per array
+			# holds groups of four lineNumbers per array
 			groupings = []
 
-			# for number in numbers[:len(numbers)-2]:
-			for number in numbers:
-				groupings.append([number[i:i+2] for i in range(0, len(number), 2) ])
+			# for number in lineNumbers[:len(lineNumbers)-2]:
+			# for number in lineNumbers:
+			# 	groupings.append([number[i:i+2] for i in range(0, len(number), 2) ])
 
 			# print(groupings)
 
 			# array with all values separated
 			row = [0 for i in range(320)]
 			rowTmp = []
-			for group in groupings[:80]:
-				for num in group:
-					rowTmp.append(int(num, 16))
+			# for group in groupings[:80]:
+			for num in lineNumbers:
+				rowTmp.append(int(num, 16))
 
-			rowNum = int(numbers[-2])
 
-			counter[rowNum] = counter[rowNum] + 1
+
+			# rowNum = int(lineNumbers[-2])
+
+			# counter[rowNum] = counter[rowNum] + 1
 
 			rowLength = len(rowTmp) - 1
 
@@ -61,7 +70,7 @@ def sort():
 			for i in range(0, rowLength):
 				row[i] = rowTmp[rowLength - i]
 
-			d[rowNum] = row
+			d[rowNumber] = row
 
 			pic.append(row)
 
@@ -69,6 +78,7 @@ def sort():
 		# pprint.pprint(counter)
 
 		print(len(pic))
+		# print(pic[10])
 
 	plt.imshow(np.array(pic, dtype='uint8'), interpolation='nearest', cmap='gray')	
 	plt.show()

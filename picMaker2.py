@@ -15,6 +15,9 @@ from sorter import sort
 #  check on python side whats received
 # how its parsed and errors catched
 
+
+# split it to two threds: 1. creates image 2. saves to file
+
 rowRange = 240
 pic = []
 t = []
@@ -24,36 +27,63 @@ listLinesToCapture = list(range(rowRange))
 file = open('data.txt', 'w')
 
 pic = [ ['00' for i in range(320)] for j in range(240)]
-s = serial.Serial('COM7', 230400, timeout=0.1)
+s = serial.Serial('COM8', 1000000, timeout=0.09)
 
 c = 0
 
-print('data acquired')
 
 done = True
 listLinesBuffer = []
+tabIndexes = [i for i in range(rowRange)]
+
+check = True
+
+while check:
+	try:
+		line, payload, line2 = s.readline().decode("UTF-8").rstrip('\r\n').split(',')
+	except:
+		continue
+
+	if len(payload) != 640:
+		continue
+
+	print(line2 + ' ' + str(len(payload)) )
+	# number = line[-1][:-2]
+	if int(line2) > 219:
+		print('1.' + line + ' ' + line2 + ' ' + str(len(payload)) )
+	if int(line2) > 230:
+		check = False
+
+# for i in range(30):
+		
+# 	print(s.readline())
+
+
+'''
 
 for i in range(0,rowRange):
-	# if i % 60 == 0:
-	print('line {}'.format(i))
+	if i % 60 == 0:
+		print('line {}'.format(i))
 	listLinesBuffer.append(s.readline())
 
+print('initial pic array craeted, len: ' + str(len(listLinesBuffer)))
+# print(listLinesBuffer[40])
 
-print('initial pic array craeted')
 
 for line in listLinesBuffer:
 	try:
-		values = line.decode("UTF-8").rstrip('\r\n').split(',')
+
+		valuesLine = line.decode("UTF-8").rstrip('\r\n').split(',')[1]
 	except:
 		print(line)
 		continue
 
-	size = len(values)
+	size = len(valuesLine)
 
-	if size == 82:
-		rownumber = int(values[0][1:])
-		# print(rownumber)
-		d[rownumber] = values[1:]
+	if size == 320 * 2:
+		lineNumber = int(line.decode("UTF-8").rstrip('\r\n').split(',')[2])
+		
+		d[lineNumber] = valuesLine
 
 print('pic dictionary created')
 
@@ -72,13 +102,7 @@ for rowIdx in sorted(d):
 	except:
 		print('index out of index: {}'.format(rowIdx))
 
-	line = ''
-
-	for n in d[rowIdx]:
-		line += str(n) + ','
-	line += '\n'
-	file.write(line)
-
+	file.write(str(rowIdx) + ',' + d[rowIdx] + '\n')
 
 file.close()
 s.close()
@@ -86,10 +110,11 @@ s.close()
 print('pic dict sorted and written to file')
 
 sort()
+'''
+
 # =========================
 # make PIC
 # =========================
-
 
 '''
 for row in pic:
