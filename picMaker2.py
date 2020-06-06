@@ -10,6 +10,8 @@ from matplotlib import pyplot as plt
 
 from sorter import sort
 
+import threading
+
 # TODO 
 # check on mcu side whats sent
 #  check on python side whats received
@@ -31,31 +33,108 @@ s = serial.Serial('COM8', 1000000, timeout=0.09)
 
 c = 0
 
-
 done = True
 listLinesBuffer = []
 tabIndexes = [i for i in range(rowRange)]
 
 check = True
+turnedOn = True
+
+payload, line2, line = ('', ) * 3
+
+def createPic():
+	global turnedOn, payload, line2, line, check
+
+	print("hello from fred")
+
+	curLine = ''
+
+	while True:
+
+		if curLine != line and line != '':
+			if len(payload) != 640:
+				print('false ' + line)
+				continue
+
+				curLine = line
+				print(line2 + ' ' + str(len(payload)) )
+				# number = line[-1][:-2]
+				if int(line2) > 219:
+					print('1.' + line + ' ' + line2 + ' ' + str(len(payload)) )
+				if int(line2) > 230:
+					check = False
+
+			# turnedOn = False
+
+def readLine(name):
+	global check, line, payload, line2, turnedOn
+
+	while True:
+		if check:
+			# print('read')
+			try:
+				if s.in_waiting > 0:
+					buff = s.readline()
+
+					line, payload, line2 = buff.decode("UTF-8").rstrip('\r\n').split(',')
+					print(line + " " +name )
+				# turnedOn = True
+			except:
+				continue
+
+
+# threadDataCollector2 = threading.Thread(target=readLine, args=('two', ))
+# threadDataCollector2.start()
+
+# threadDataCollector1 = threading.Thread(target=readLine, args=('one', ))
+# threadDataCollector1.start()
+
+# threadDataCollector2 = threading.Thread(target=readLine, args=( ))
+# threadDataCollector2.start()
+
+threadPicCreator = threading.Thread(target=createPic, args=( ))
+threadPicCreator.start()
+
+
+tab = [i for i in range(240)]
 
 while check:
 	try:
-		line, payload, line2 = s.readline().decode("UTF-8").rstrip('\r\n').split(',')
-	except:
+		if s.in_waiting > 0:
+			buff = s.readline()
+
+			line, payload, line2 = buff.decode("UTF-8").rstrip('\r\n').split(',')
+
+			row = int(line2)
+			
+			# tab.remove(int(line[1:]))
+			if row in tab:
+				tab.remove(row)
+
+			if row == 239:
+				print('remaining len: ' + str(len(tab)))
+				# for k in tab:
+				# 	print(str(k) +',',  end='')
+
+				tab = [i for i in range(240)]
+
+	except Exception as e:
+		print(e)
+		# print(buff)
 		continue
 
-	if len(payload) != 640:
-		continue
+	# if len(payload) != 640:
+	# 	continue
 
-	print(line2 + ' ' + str(len(payload)) )
-	# number = line[-1][:-2]
-	if int(line2) > 219:
-		print('1.' + line + ' ' + line2 + ' ' + str(len(payload)) )
-	if int(line2) > 230:
-		check = False
+	# print(line2 + ' ' + str(len(payload)) )
+	# # number = line[-1][:-2]
+	# if int(line2) > 219:
+	# 	print('1.' + line + ' ' + line2 + ' ' + str(len(payload)) )
+	# if int(line2) > 230:
+	# 	check = False
 
 # for i in range(30):
-		
+			
 # 	print(s.readline())
 
 
